@@ -9,6 +9,8 @@ const {
   GraphQLString,
   GraphQLSchema,
   GraphQLList,
+  GraphQLNonNull,
+  GraphQLEnumType
 } = require("graphql");
 
 // Client Type
@@ -73,6 +75,120 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+// Mutations
+
+// The methods defined inside the mutation object are used to cread, update and delete resources from the database using GRAPHQL
+
+// To get or fetch data, we use queries
+
+const mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    addClient: {
+      type: ClientType,
+      args: {
+        // GraphQLNonNull makes the field mandatory, meaning when creating a Client, the user cant just let the field be blank
+        name: {type: GraphQLNonNull(GraphQLString)},
+        email: {type: GraphQLNonNull(GraphQLString)},
+        phone: {type: GraphQLNonNull(GraphQLString)},
+      },
+      resolve(parent, args) {
+        const client = new Client({
+          name: args.name,
+          email: args.email,
+          phone: args.phone
+        });
+
+        return client.save()
+      }
+    },
+    deleteClient: {
+      type: ClientType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID)},
+      },
+      resolve(parent, args) {
+        return Client.findByIdAndRemove(args.id)
+      }
+    },
+    addProject: {
+      type: ProjectType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString)},
+        description: { type: GraphQLNonNull(GraphQLString)},
+        status: { type: new GraphQLEnumType({
+          name: 'ProjectStatus',
+          values: {
+            'new': {value: 'Not Started'},
+            'progress': {value: 'In Progress'},
+            'completed': {value: 'Completed'},
+          }
+        }),
+        defaultValue: 'Not Started',
+      },
+      clientId: {type: GraphQLNonNull(GraphQLID)},
+      },
+      resolve(parent, args) {
+        const project = new Project({
+          name: args.name,
+          description: args.description,
+          status: args.status,
+          clientId: args.clientId
+        });
+
+        return project.save()
+      }
+    },
+
+    deleteProject: {
+      type: ProjectType,
+      args: {
+        id: {type: GraphQLNonNull(GraphQLID)},
+      },
+      resolve(parent, args) {
+        return Project.findByIdAndRemove(args.id)
+      }
+    },
+
+    updateProject: {
+      type: ProjectType,
+      // We're not using GraphQLNonNull on the name and description because we want to give the user the option to update one or the other, and not necessarily both all the times.
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID)},
+        name: {type: GraphQLString},
+        description: {type: GraphQLString},
+        status: {
+          type: new GraphQLEnumType({
+            name: 'ProjectStatusUpdate',
+            values: {
+              new: {value: 'Not Started'},
+              progress: {value: 'In Progress'},
+              completed: {value: 'Completed'}
+            }
+          })
+        }
+        
+      },
+      resolve(parent, args) {
+        return Project.findByIdAndUpdate(
+          args.id,
+          {
+            $set: {
+              name: args.name,
+              description: args.description,
+              status: args.status
+            }
+          },
+          { new: true }
+        )
+      }
+    }
+
+
+  }
+})
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation
 });
