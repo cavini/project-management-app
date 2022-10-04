@@ -5,6 +5,7 @@ import { GET_PROJECT } from '../queries/projectQueries'
 import ClientInfo from '../components/ClientInfo'
 import DeleteProjectButton from '../components/DeleteProjectButton'
 import EditProjectForm from '../components/EditProjectForm'
+import React from 'react'
 
 const Project = () => {
   const { id } = useParams()

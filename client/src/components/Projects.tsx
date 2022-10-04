@@ -2,6 +2,8 @@ import { useQuery } from '@apollo/client'
 import { GET_PROJECTS } from '../queries/projectQueries'
 import Spinner from './Spinner'
 import ProjectCard from './ProjectCard'
+import React from 'react'
+import { Project } from '../../types/ProjectType'
 
 const Clients = () => {
   const { loading, error, data } = useQuery(GET_PROJECTS)
@@ -11,7 +13,7 @@ const Clients = () => {
     <>
       {data.projects.length > 0 ? (
         <div className='row mt-4'>
-          {data.projects.map((project) => (
+          {data.projects.map((project: Project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>

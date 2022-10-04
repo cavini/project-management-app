@@ -1,6 +1,5 @@
 import React from 'react'
 import logo from './assets/logo.png'
-
 const Header = () => {
   return (
     <nav className='navbar bg-light mg-4 p-0'>

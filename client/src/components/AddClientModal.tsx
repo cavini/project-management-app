@@ -3,6 +3,7 @@ import { FaUser } from 'react-icons/fa'
 import { useMutation } from '@apollo/client'
 import { ADD_CLIENT } from '../mutations/clientMutations'
 import { GET_CLIENTS } from '../queries/clientQueries'
+import React from 'react'
 
 export default function AddClientModal() {
   const [name, setName] = useState('')
@@ -12,7 +13,8 @@ export default function AddClientModal() {
   const [addClient] = useMutation(ADD_CLIENT, {
     variables: { name, email, phone },
     update(cache, { data: { addClient } }) {
-      const { clients } = cache.readQuery({ query: GET_CLIENTS })
+      // The return type for this function is actually 'any'
+      const { clients }: any = cache.readQuery({ query: GET_CLIENTS })
 
       cache.writeQuery({
         query: GET_CLIENTS,
@@ -21,14 +23,14 @@ export default function AddClientModal() {
     },
   })
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
 
     if (name === '' || email === '' || phone === '') {
       return alert('Please fill in all fields')
     }
 
-    addClient(name, email, phone)
+    addClient()
 
     setName('')
     setEmail('')

@@ -4,6 +4,8 @@ import { useMutation, useQuery } from '@apollo/client'
 import { ADD_PROJECT } from '../mutations/projectMutations'
 import { GET_PROJECTS } from '../queries/projectQueries'
 import { GET_CLIENTS } from '../queries/clientQueries'
+import React from 'react'
+import { Client } from '../../types/ClientType'
 
 export default function AddProjectModal() {
   const [name, setName] = useState('')
@@ -14,7 +16,8 @@ export default function AddProjectModal() {
   const [addProject] = useMutation(ADD_PROJECT, {
     variables: { name, description, clientId, status },
     update(cache, { data: { addProject } }) {
-      const { projects } = cache.readQuery({ query: GET_PROJECTS })
+      // The return type is actually 'any' in this case
+      const { projects }: any = cache.readQuery({ query: GET_PROJECTS })
       cache.writeQuery({
         query: GET_PROJECTS,
         data: { projects: [...projects, addProject] },
@@ -25,14 +28,14 @@ export default function AddProjectModal() {
   // Get Clients for select
   const { loading, error, data } = useQuery(GET_CLIENTS)
 
-  const onSubmit = (e) => {
+  const onSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault()
 
     if (name === '' || description === '' || status === '') {
       return alert('Please fill in all fields')
     }
 
-    addProject(name, description, clientId, status)
+    addProject()
 
     setName('')
     setDescription('')
@@ -40,8 +43,18 @@ export default function AddProjectModal() {
     setClientId('')
   }
 
-  if (loading) return null
-  if (error) return 'Something Went Wrong'
+  if (loading)
+    return (
+      <>
+        <p>Loading...</p>
+      </>
+    )
+  if (error)
+    return (
+      <>
+        <p>Something Went Wrong</p>
+      </>
+    )
 
   return (
     <>
@@ -118,7 +131,7 @@ export default function AddProjectModal() {
                         value={clientId}
                         onChange={(e) => setClientId(e.target.value)}>
                         <option value=''>Select Client</option>
-                        {data.clients.map((client) => (
+                        {data.clients.map((client: Client) => (
                           <option key={client.id} value={client.id}>
                             {client.name}
                           </option>
