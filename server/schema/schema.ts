@@ -12,6 +12,12 @@ const {
   GraphQLEnumType,
 } = require("graphql");
 
+interface Projects {
+  type: typeof GraphQLList
+  resolve: () => any
+  remove: () => any
+}
+
 // Client Type
 
 const ClientType = new GraphQLObjectType({
@@ -35,7 +41,7 @@ const ProjectType = new GraphQLObjectType({
     status: { type: GraphQLString },
     client: {
       type: ClientType,
-      resolve(parent, args) {
+      resolve(parent: { clientId: any; }, _args: Object) {
         return Client.findById(parent.clientId);
       },
     },
@@ -47,27 +53,27 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     projects: {
       type: new GraphQLList(ProjectType),
-      resolve(parent, args) {
+      resolve(_parent: Object, _args: Object) {
         return Project.find();
       },
     },
     project: {
       type: ProjectType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { id: any; }) {
         return Project.findById(args.id);
       },
     },
     clients: {
       type: new GraphQLList(ClientType),
-      resolve(parent, args) {
+      resolve(_parent: Object, _args: Object) {
         return Client.find();
       },
     },
     client: {
       type: ClientType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { id: any; }) {
         return Client.findById(args.id);
       },
     },
@@ -91,7 +97,7 @@ const mutation = new GraphQLObjectType({
         email: { type: GraphQLNonNull(GraphQLString) },
         phone: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { name: any; email: any; phone: any; }) {
         const client = new Client({
           name: args.name,
           email: args.email,
@@ -106,8 +112,8 @@ const mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args) {
-        Project.find({ clientId: args.id }).then((projects) => {
+      resolve(_parent: Object, args: { id: any; }) {
+        Project.find({ clientId: args.id }).then((projects: Projects[]) => {
           projects.forEach((project) => {
             project.remove();
           });
@@ -134,7 +140,8 @@ const mutation = new GraphQLObjectType({
         },
         clientId: { type: GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { name: string; description: string; status: string; clientId: string; }) {
+
         const project = new Project({
           name: args.name,
           description: args.description,
@@ -151,7 +158,7 @@ const mutation = new GraphQLObjectType({
       args: {
         id: { type: GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { id: any; }) {
         return Project.findByIdAndRemove(args.id);
       },
     },
@@ -174,7 +181,7 @@ const mutation = new GraphQLObjectType({
           }),
         },
       },
-      resolve(parent, args) {
+      resolve(_parent: Object, args: { id: any; name: any; description: any; status: any; }) {
         return Project.findByIdAndUpdate(
           args.id,
           {
